@@ -27,8 +27,7 @@ start_bal() ->
 	spawn(fun() -> bal_loop([], 1) end).
 
 stop_bal(Balancer) ->
-	Balancer ! die,
-	unregister(Balancer).
+	Balancer ! die.
 
 bal_loop(Serverlist, Nextserver) ->
 	receive
@@ -48,7 +47,7 @@ bal_loop(Serverlist, Nextserver) ->
 				NS > SLL ->
 					bal_loop(Serverlist, 1);
 				true ->
-					bal_loop(Serverlist, Nextserver+1)
+					bal_loop(Serverlist, NS)
 			end;
 		{response, To, Ret} ->
 			To ! Ret,
