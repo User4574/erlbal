@@ -26,6 +26,11 @@ bal_loop(Serverlist, Nextserver) ->
 	receive
 		{add_node, PID} ->
 			bal_loop(Serverlist ++ [PID], Nextserver);
+		{del_node, PID} ->
+			bal_loop(Serverlist -- [PID], Nextserver);
+		{list_nodes, From} ->
+			From ! Serverlist,
+			bal_loop(Serverlist, Nextserver);
 		{request, From, ARGS} ->
 			Serv = lists:nth(Nextserver, Serverlist),
 			Serv ! {request, From, ARGS},
@@ -48,6 +53,6 @@ bal_loop(Serverlist, Nextserver) ->
 make_request(Balancer, ARGS) ->
 	Balancer ! {request, self(), ARGS},
 	receive
-		ID ->
-			ID
+		Ret ->
+			Ret
 	end.
