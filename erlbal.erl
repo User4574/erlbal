@@ -1,50 +1,52 @@
 -module(erlbal).
--export([make_request/0, start_bal/0, kill_bal/0, start_server/1]).
+-export([make_request/2, start_bal/1, kill_bal/1, start_server/2]).
 
-start_server(ID) ->
-	PID = spawn(fun() -> serverloop(ID) end),
-	balancer ! {add_node, PID}.
+start_server(Balancer, Fun) ->
+	PID = spawn(fun() -> server_loop(Balancer, Fun) end),
+	Balancer ! {add_node, PID}.
 
-serverloop(ID) ->
+server_loop(Balancer, Fun) ->
 	receive
-		{request, From} ->
-			balancer ! {response, From, ID},
-			serverloop(ID);
+		{request, From, ARGS} ->
+			Ret = Fun(ARGS),
+			Balancer ! {response, From, Ret},
+			server_loop(Balancer, Fun);
 		die ->
 			ok
 	end.
 
-start_bal() ->
-	register(balancer, spawn(fun() -> balloop([], 1) end)).
+start_bal(Name) ->
+	register(Name, spawn(fun() -> bal_loop([], 1) end)).
 
-kill_bal() ->
-	balancer ! die.
+kill_bal(Balancer) ->
+	Balancer ! die,
+	unregister(Balancer).
 
-balloop(Serverlist, Nextserver) ->
+bal_loop(Serverlist, Nextserver) ->
 	receive
 		{add_node, PID} ->
-			balloop(Serverlist ++ [PID], Nextserver);
-		{request, From} ->
+			bal_loop(Serverlist ++ [PID], Nextserver);
+		{request, From, ARGS} ->
 			Serv = lists:nth(Nextserver, Serverlist),
-			Serv ! {request, From},
+			Serv ! {request, From, ARGS},
 			NS = Nextserver + 1,
 			SLL = length(Serverlist),
 			if
 				NS > SLL ->
-					balloop(Serverlist, 1);
+					bal_loop(Serverlist, 1);
 				true ->
-					balloop(Serverlist, Nextserver+1)
+					bal_loop(Serverlist, Nextserver+1)
 			end;
-		{response, To, ID} ->
-			To ! ID,
-			balloop(Serverlist, Nextserver);
+		{response, To, Ret} ->
+			To ! Ret,
+			bal_loop(Serverlist, Nextserver);
 		die ->
 			lists:foreach(fun(X) -> X ! die end, Serverlist)
 	end.
 
 
-make_request() ->
-	balancer ! {request, self()},
+make_request(Balancer, ARGS) ->
+	Balancer ! {request, self(), ARGS},
 	receive
 		ID ->
 			ID
