@@ -1,9 +1,17 @@
 -module(erlbal).
--export([make_request/2, start_bal/1, kill_bal/1, start_server/2]).
+-export([make_request/2, start_bal/0, stop_bal/1, start_server/2, stop_server/2, list_servers/1]).
 
 start_server(Balancer, Fun) ->
 	PID = spawn(fun() -> server_loop(Balancer, Fun) end),
 	Balancer ! {add_node, PID}.
+
+stop_server(Balancer, PID) ->
+	Balancer ! {del_node, PID},
+	PID ! die.
+
+list_servers(Balancer) ->
+	Balancer ! {list_nodes, self()},
+	receive Nodes -> Nodes end.
 
 server_loop(Balancer, Fun) ->
 	receive
@@ -15,10 +23,10 @@ server_loop(Balancer, Fun) ->
 			ok
 	end.
 
-start_bal(Name) ->
-	register(Name, spawn(fun() -> bal_loop([], 1) end)).
+start_bal() ->
+	spawn(fun() -> bal_loop([], 1) end).
 
-kill_bal(Balancer) ->
+stop_bal(Balancer) ->
 	Balancer ! die,
 	unregister(Balancer).
 
@@ -52,7 +60,4 @@ bal_loop(Serverlist, Nextserver) ->
 
 make_request(Balancer, ARGS) ->
 	Balancer ! {request, self(), ARGS},
-	receive
-		Ret ->
-			Ret
-	end.
+	receive Ret -> Ret end.
