@@ -2,10 +2,8 @@ h1. TODO
 
 h2. Little changes:
 
-* Remove the Balancer variable from the server
 * Add server state
 * Remove the argless request call and implement strict listed args
-* Make the server return directly to the requester, not to the balancer
 
 h2. BIG changes:
 

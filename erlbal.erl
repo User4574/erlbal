@@ -2,7 +2,7 @@
 -export([make_request/1, make_request/2, start_bal/0, stop_bal/1, start_server/3, stop_server/2, list_servers/1]).
 
 start_server(Balancer, Node, Fun) ->
-	PID = spawn(Node, fun() -> server_loop(Balancer, Fun) end),
+	PID = spawn(Node, fun() -> server_loop(Fun) end),
 	Balancer ! {add_node, PID}.
 
 stop_server(Balancer, PID) ->
@@ -13,16 +13,16 @@ list_servers(Balancer) ->
 	Balancer ! {list_nodes, self()},
 	receive Nodes -> Nodes end.
 
-server_loop(Balancer, Fun) ->
+server_loop(Fun) ->
 	receive
 		{request, From} ->
 			Ret = Fun(),
-			Balancer ! {response, From, Ret},
-			server_loop(Balancer, Fun);
+			From ! Ret,
+			server_loop(Fun);
 		{request, From, ARGS} ->
 			Ret = Fun(ARGS),
-			Balancer ! {response, From, Ret},
-			server_loop(Balancer, Fun);
+			From ! Ret,
+			server_loop(Fun);
 		die ->
 			ok
 	end.
