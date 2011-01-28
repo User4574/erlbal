@@ -18,6 +18,11 @@ h2. Request calls:
 * make_request/1 takes a balancer and returns the response from the server.
 * make_request/2 takes a balancer and an argument and returns the response from the server.
 
+h2. The function:
+
+p. The function must take two lists, some arguments and some state.
+p. It must return a tuple of {Return value, new state}.
+
 h2. Info
 
 p. The balancer round robins requests between erlang processes.
