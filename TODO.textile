@@ -3,7 +3,6 @@ h1. TODO
 h2. Little changes:
 
 * Add server state
-* Remove the argless request call and implement strict listed args
 
 h2. BIG changes:
 

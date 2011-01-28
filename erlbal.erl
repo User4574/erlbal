@@ -1,7 +1,7 @@
 -module(erlbal).
--export([make_request/1, make_request/2, start_bal/0, stop_bal/1, start_server/3, stop_server/2, list_servers/1]).
+-export([make_request/2, start_bal/0, stop_bal/1, start_server/3, stop_server/2, list_servers/1]).
 
-start_server(Balancer, Node, Fun) ->
+start_server(Balancer, Node, Fun) when is_function(Fun, 1) ->
 	PID = spawn(Node, fun() -> server_loop(Fun) end),
 	Balancer ! {add_node, PID}.
 
@@ -15,10 +15,6 @@ list_servers(Balancer) ->
 
 server_loop(Fun) ->
 	receive
-		{request, From} ->
-			Ret = Fun(),
-			From ! Ret,
-			server_loop(Fun);
 		{request, From, ARGS} ->
 			Ret = Fun(ARGS),
 			From ! Ret,
@@ -42,17 +38,6 @@ bal_loop(Serverlist, Nextserver) ->
 		{list_nodes, From} ->
 			From ! Serverlist,
 			bal_loop(Serverlist, Nextserver);
-		{request, From} ->
-			Serv = lists:nth(Nextserver, Serverlist),
-			Serv ! {request, From},
-			NS = Nextserver + 1,
-			SLL = length(Serverlist),
-			if
-				NS > SLL ->
-					bal_loop(Serverlist, 1);
-				true ->
-					bal_loop(Serverlist, NS)
-			end;
 		{request, From, ARGS} ->
 			Serv = lists:nth(Nextserver, Serverlist),
 			Serv ! {request, From, ARGS},
@@ -64,17 +49,11 @@ bal_loop(Serverlist, Nextserver) ->
 				true ->
 					bal_loop(Serverlist, NS)
 			end;
-		{response, To, Ret} ->
-			To ! Ret,
-			bal_loop(Serverlist, Nextserver);
 		die ->
 			lists:foreach(fun(X) -> X ! die end, Serverlist)
 	end.
 
 
-make_request(Balancer) ->
-	Balancer ! {request, self()},
-	receive Ret -> Ret end.
-make_request(Balancer, ARGS) ->
+make_request(Balancer, ARGS) when is_list(ARGS)->
 	Balancer ! {request, self(), ARGS},
 	receive Ret -> Ret end.
