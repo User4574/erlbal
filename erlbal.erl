@@ -50,7 +50,7 @@ bal_loop(Serverlist, Nextserver) ->
 					bal_loop(Serverlist, NS)
 			end;
 		die ->
-			lists:foreach(fun(X) -> X ! die end, Serverlist)
+			ok
 	end.
 
 

@@ -5,7 +5,7 @@ erlbal is an erlang load balancer.
 h2. Balancer calls:
 
 * start_bal/0 spawns a balancer.
-* stop_bal/1 takes a balancer and kills all of its servers and then kills the balancer.
+* stop_bal/1 takes a balancer kills the balancer.
 * list_servers/1 takes a balancer and returns a list of the servers it balances over.
 
 h2. Server calls:

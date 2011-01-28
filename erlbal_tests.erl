@@ -7,6 +7,7 @@ start(simple) ->
 	erlbal:start_server(Bal, node(), fun(_, _) -> {8, []} end, []),
 	7 = erlbal:make_request(Bal, []),
 	8 = erlbal:make_request(Bal, []),
+	lists:foreach(fun(X) -> erlbal:stop_server(Bal, X) end, erlbal:list_servers(Bal)),
 	erlbal:stop_bal(Bal),
 	ok;
 
@@ -16,6 +17,7 @@ start(args) ->
 	erlbal:start_server(Bal, node(), fun([X], _) -> {X+2, []} end, []),
 	7 = erlbal:make_request(Bal, [6]),
 	8 = erlbal:make_request(Bal, [6]),
+	lists:foreach(fun(X) -> erlbal:stop_server(Bal, X) end, erlbal:list_servers(Bal)),
 	erlbal:stop_bal(Bal),
 	ok;
 
@@ -25,6 +27,7 @@ start(state) ->
 	erlbal:start_server(Bal, node(), fun([X], [S]) -> Y = X + S, {Y, [S]} end, [10]),
 	7 = erlbal:make_request(Bal, [6]),
 	16 = erlbal:make_request(Bal, [6]),
+	lists:foreach(fun(X) -> erlbal:stop_server(Bal, X) end, erlbal:list_servers(Bal)),
 	erlbal:stop_bal(Bal),
 	ok;
 
@@ -36,5 +39,6 @@ start(complex_state) ->
 	16 = erlbal:make_request(Bal, [6]),
 	8 = erlbal:make_request(Bal, [6]),
 	17 = erlbal:make_request(Bal, [6]),
+	lists:foreach(fun(X) -> erlbal:stop_server(Bal, X) end, erlbal:list_servers(Bal)),
 	erlbal:stop_bal(Bal),
 	ok.
