@@ -21,6 +21,7 @@ h2. Request calls:
 h2. The function:
 
 p. The function must take two lists, some arguments and some state.
+
 p. It must return a tuple of {Return value, new state}.
 
 h2. Info
