@@ -3,6 +3,7 @@ h1. TODO
 h2. Little changes:
 
 * Add server state
+* stop_bal/1 should not kill servers
 
 h2. BIG changes:
 
