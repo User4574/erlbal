@@ -5,5 +5,8 @@ h2. Little changes:
 
 h2. BIG changes:
 
+* OTP gen_server the motherfucker
+** (Learn OTP gen_server)
+
 * erlbal-p: current implementation of erlbal to schedule across processes
 * erlbal-n: new project to actually load balance across nodes
